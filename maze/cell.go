@@ -1,5 +1,7 @@
 package maze
 
+import "math/rand"
+
 type Side int
 
 const (
@@ -34,13 +36,18 @@ func NewCell() *cell {
 }
 
 func (c *cell) getRandomNeighbour() *cell {
+	unvisited := make([]*wall, 0)
 	for _, w := range c.walls {
 		if !w.cell.visited {
-			return w.cell
+			unvisited = append(unvisited, w)
 		}
 	}
+	unvisitedCount := len(unvisited)
+	if unvisitedCount == 0 {
+		return nil
+	}
 
-	return nil
+	return unvisited[rand.Intn(unvisitedCount)].cell
 }
 
 func (c *cell) removeWall(n *cell) {

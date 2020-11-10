@@ -9,7 +9,7 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	m := maze.Generate(5, 10)
+	m := maze.Generate(5, 30)
 	m.PrintMaze()
 	fmt.Sprintln("%t", m)
 }
