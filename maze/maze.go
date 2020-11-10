@@ -24,17 +24,17 @@ func NewMaze(h int, w int) *maze {
 	}
 }
 
-func _initializeWalls(above []*cell, below []*cell) {
+func _initializeNeighbours(above []*cell, below []*cell) {
 	w := len(above)
 	for i := 0; i < w - 1; i++ {
-		above[i].neighbours[right] = NewWall(above[i + 1])
-		above[i + 1].neighbours[left] = NewWall(above[i])
+		above[i].neighbours[right] = NewNeighbour(above[i + 1])
+		above[i + 1].neighbours[left] = NewNeighbour(above[i])
 	}
 
 	if below != nil {
 		for i := 0; i < w; i++ {
-			above[i].neighbours[down] = NewWall(below[i])
-			below[i].neighbours[up] = NewWall(above[i])
+			above[i].neighbours[down] = NewNeighbour(below[i])
+			below[i].neighbours[up] = NewNeighbour(above[i])
 		}
 	}
 }
@@ -48,9 +48,9 @@ func initializeMaze(h int, w int) [][]*cell {
 	}
 
 	for i := 0; i < h - 1; i++ {
-		_initializeWalls(s[i], s[i + 1])
+		_initializeNeighbours(s[i], s[i + 1])
 	}
-	_initializeWalls(s[len(s) - 1], nil)
+	_initializeNeighbours(s[len(s) - 1], nil)
 
 	return s
 }

@@ -11,32 +11,32 @@ const (
 	left
 )
 
-type wall struct {
-	present bool
-	cell    *cell
+type neighbour struct {
+	wall bool
+	cell *cell
 }
 
-func NewWall(c *cell) *wall {
-	return &wall{
-		present: true,
+func NewNeighbour(c *cell) *neighbour {
+	return &neighbour{
+		wall: true,
 		cell: c,
 	}
 }
 
 type cell struct {
 	visited    bool
-	neighbours map[Side]*wall
+	neighbours map[Side]*neighbour
 }
 
 func NewCell() *cell {
 	return &cell{
 		visited:    false,
-		neighbours: make(map[Side]*wall, 0),
+		neighbours: make(map[Side]*neighbour, 0),
 	}
 }
 
 func (c *cell) getRandomNeighbour() *cell {
-	unvisited := make([]*wall, 0)
+	unvisited := make([]*neighbour, 0)
 	for _, w := range c.neighbours {
 		if !w.cell.visited {
 			unvisited = append(unvisited, w)
@@ -51,16 +51,16 @@ func (c *cell) getRandomNeighbour() *cell {
 }
 
 func (c *cell) removeWall(n *cell) {
-	for _, wall := range c.neighbours {
-		if n == wall.cell {
-			wall.present = false
+	for _, _n := range c.neighbours {
+		if n == _n.cell {
+			_n.wall = false
 			return
 		}
 	}
 }
 
 func (c* cell) hasWall(s Side) bool {
-	if w, ok := c.neighbours[s]; ok && w.present{
+	if n, ok := c.neighbours[s]; ok && n.wall {
 		return true
 	}
 
