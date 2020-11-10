@@ -15,7 +15,7 @@ func NewMaze(h int, w int) *maze {
 	return &maze{
 		height: h,
 		width:  w,
-		cells:  initializeMazeCells(h, w),
+		cells:  initializeMaze(h, w),
 	}
 }
 
@@ -26,7 +26,21 @@ func (m *maze) getCell(x int, y int) *cell {
 	return m.cells[x][y]
 }
 
-func initializeMazeCells(h int, w int) [][]*cell {
+func _initializeWalls(above []*cell, below []*cell) {
+	w := len(above)
+	for i := 0; i < w - 1; i++ {
+		above[i].walls[right] = NewWall(above[i + 1])
+		above[i + 1].walls[left] = NewWall(above[i])
+	}
+
+	if below != nil {
+		for i := 0; i < w; i++ {
+			above[i].walls[down] = NewWall(below[i])
+			below[i].walls[up] = NewWall(above[i])
+		}
+	}
+}
+func initializeMaze(h int, w int) [][]*cell {
 	s := make([][]*cell, h)
 	for i := range s {
 		s[i] = make([]*cell, w)
@@ -35,31 +49,10 @@ func initializeMazeCells(h int, w int) [][]*cell {
 		}
 	}
 
-	for row := 0; row < h; row++ {
-		for col := 0; col < w; col++ {
-			walls := &s[row][col].walls
-			// Add neighbour above
-			if row > 0 {
-				*walls = append(*walls, NewWall(up, s[row-1][col]))
-			}
-
-			// Add neighbour below
-			if row < (h - 1) {
-				*walls = append(*walls, NewWall(down, s[row+1][col]))
-			}
-
-
-			// Add neighbour to the left
-			if col > 0 {
-				*walls = append(*walls, NewWall(left, s[row][col-1]))
-			}
-
-			// Add neighbour to the right
-			if col < (w - 1) {
-				*walls = append(*walls, NewWall(right, s[row][col+1]))
-			}
-		}
+	for i := 0; i < h - 1; i++ {
+		_initializeWalls(s[i], s[i + 1])
 	}
+	_initializeWalls(s[len(s) - 1], nil)
 
 	return s
 }
@@ -73,12 +66,8 @@ func Generate(height int, width int) *maze {
 	stack := make([]*cell, 0)
 
 	// generate the coordinates of the initial cell
-	_x := int(rand.Intn(int(width)))
-	_y := int(rand.Intn(int(height)))
-
-	// TODO: Remove this, generate random
-	_x = 0
-	_y = 0
+	_x := rand.Intn(width)
+	_y := rand.Intn(height)
 
 	// add the initial cell to the stack and mark it as visited
 	cell := m.cells[_y][_x]

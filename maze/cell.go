@@ -1,67 +1,60 @@
 package maze
 
-import "math/rand"
+type Side int
 
-// Walls are represented by edges between nodes
-// Structure of the maze is represented by the 2D array
+const (
+	up Side = iota
+	down
+	right
+	left
+)
+
+type wall struct {
+	present bool
+	cell    *cell
+}
+
+func NewWall(c *cell) *wall {
+	return &wall{
+		present: true,
+		cell: c,
+	}
+}
+
 type cell struct {
 	visited bool
-	walls []*wall
+	walls map[Side]*wall
 }
 
 func NewCell() *cell {
 	return &cell{
 		visited: false,
-		walls:   make([]*wall, 0),
+		walls:   make(map[Side]*wall, 0),
 	}
 }
 
 func (c *cell) getRandomNeighbour() *cell {
-	if len(c.walls) == 0 {
-		return nil
-	}
-
-	index := rand.Intn(len(c.walls))
-
-	// calculate the index that would result in all neighbours being visited
-	// index = 0, len(c.walls) = 4, (0 + 4 - 1) % 4 = 3
-	// index = 1, len(c.walls) = 4, (1 + 4 - 1) % 4 = 0
-	// index = 2, len(c.walls) = 4, (2 + 4 - 1) % 4 = 1
-	// index = 3, len(c.walls) = 4, (3 + 4 - 1) % 4 = 2
-	finishIndex := (index + len(c.walls) - 1) % len(c.walls)
-	for {
-		neighbour := c.walls[index].getOpposingCell()
-		if !neighbour.visited {
-			return neighbour
+	for _, w := range c.walls {
+		if !w.cell.visited {
+			return w.cell
 		}
-
-		if index == finishIndex {
-			break
-		}
-
-		index = (index + 1) % len(c.walls)
 	}
 
 	return nil
 }
 
 func (c *cell) removeWall(n *cell) {
-	for i, wall := range c.walls {
-		if n == wall.getOpposingCell() {
-			c.walls[i] = c.walls[len(c.walls) - 1]
-			c.walls[len(c.walls) - 1] = nil
-			c.walls = c.walls[:len(c.walls) - 1]
-
+	for _, wall := range c.walls {
+		if n == wall.cell {
+			wall.present = false
 			return
 		}
 	}
 }
 
-func (c* cell) hasWall(side Side) bool {
-	for _, wall := range c.walls {
-		if side == wall.side {
-			return true
-		}
+func (c* cell) hasWall(s Side) bool {
+	if w, ok := c.walls[s]; ok && w.present{
+		return true
 	}
 
 	return false
