@@ -8,14 +8,24 @@ import (
 
 type maze struct {
 	height, width int
+	root *cell
+	genStart *cell
 	cells [][]*cell
 }
 
 func NewMaze(h int, w int) *maze {
+	cells := initializeMaze(h, w)
+
+	// generate the coordinates of the initial cell
+	_x := rand.Intn(w)
+	_y := rand.Intn(h)
+
 	return &maze{
 		height: h,
 		width:  w,
-		cells:  initializeMaze(h, w),
+		cells:  cells,
+		root: cells[0][0],
+		genStart: cells[_y][_x],
 	}
 }
 
@@ -65,12 +75,8 @@ func Generate(height int, width int) *maze {
 	// stack for nodes to explore
 	stack := make([]*cell, 0)
 
-	// generate the coordinates of the initial cell
-	_x := rand.Intn(width)
-	_y := rand.Intn(height)
-
 	// add the initial cell to the stack and mark it as visited
-	cell := m.cells[_y][_x]
+	cell := m.genStart
 	cell.visited = true
 
 	stack = append(stack, cell)
