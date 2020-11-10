@@ -8,6 +8,7 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+
 	m := maze.Generate(50, 30)
 	m.PrintMaze()
 }

@@ -8,20 +8,10 @@ import (
 
 type maze struct {
 	root *cell
-	genStart *cell
 }
 
 func NewMaze(h int, w int) *maze {
-	cells := initializeMaze(h, w)
-
-	// generate the coordinates of the initial cell
-	_x := rand.Intn(w)
-	_y := rand.Intn(h)
-
-	return &maze{
-		root: cells[0][0],
-		genStart: cells[_y][_x],
-	}
+	return &maze{initializeMaze(h, w)}
 }
 
 func _initializeNeighbours(above []*cell, below []*cell) {
@@ -38,7 +28,7 @@ func _initializeNeighbours(above []*cell, below []*cell) {
 		}
 	}
 }
-func initializeMaze(h int, w int) [][]*cell {
+func initializeMaze(h int, w int) *cell {
 	s := make([][]*cell, h)
 	for i := range s {
 		s[i] = make([]*cell, w)
@@ -52,7 +42,24 @@ func initializeMaze(h int, w int) [][]*cell {
 	}
 	_initializeNeighbours(s[len(s) - 1], nil)
 
-	return s
+	return s[0][0]
+}
+
+func (m *maze) getRandomStartingCell(h int, w int) *cell {
+	// generate the coordinates of the initial cell
+	_x := rand.Intn(w)
+	_y := rand.Intn(h)
+
+	c := m.root
+	for i := 0; i < _x; i++ {
+		c = c.neighbours[right].cell
+	}
+
+	for i := 0; i < _y; i++ {
+		c = c.neighbours[down].cell
+	}
+
+	return c
 }
 
 // figure out how to make `make` create a maze
@@ -64,7 +71,7 @@ func Generate(height int, width int) *maze {
 	stack := make([]*cell, 0)
 
 	// add the initial cell to the stack and mark it as visited
-	cell := m.genStart
+	cell := m.getRandomStartingCell(height, width)
 	cell.visited = true
 
 	stack = append(stack, cell)
