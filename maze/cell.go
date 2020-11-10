@@ -5,16 +5,14 @@ import "math/rand"
 // Walls are represented by edges between nodes
 // Structure of the maze is represented by the 2D array
 type cell struct {
-	x, y int
 	visited bool
 	walls []*wall
 }
 
-func NewCell(x int, y int) cell {
-	return cell{
-		x: x,
-		y: y,
-		walls: make([]*wall, 0),
+func NewCell() *cell {
+	return &cell{
+		visited: false,
+		walls:   make([]*wall, 0),
 	}
 }
 
@@ -45,10 +43,6 @@ func (c *cell) getRandomNeighbour() *cell {
 	}
 
 	return nil
-}
-
-func (c *cell) visit() {
-	c.visited = true
 }
 
 func (c *cell) removeWall(n *cell) {

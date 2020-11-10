@@ -8,19 +8,30 @@ import (
 
 type maze struct {
 	height, width int16
-	cells [][]cell
+	cells [][]*cell
 }
 
+func NewMaze(h int16, w int16) *maze {
+	return &maze{
+		height: h,
+		width:  w,
+		cells:  initializeMazeCells(h, w),
+	}
+}
+
+// TODO: Candidate for removal
+// - Need to remove reliance on this function when drawing the maze
+// - Easiest way, keep track of root node (0, 0) in maze object
 func (m *maze) getCell(x int16, y int16) *cell {
-	return &m.cells[x][y]
+	return m.cells[x][y]
 }
 
-func initializeMazeCells(h int16, w int16) [][]cell {
-	s := make([][]cell, h)
+func initializeMazeCells(h int16, w int16) [][]*cell {
+	s := make([][]*cell, h)
 	for i := range s {
-		s[i] = make([]cell, w)
+		s[i] = make([]*cell, w)
 		for j := range s[i] {
-			s[i][j] = NewCell(i, j)
+			s[i][j] = NewCell()
 		}
 	}
 
@@ -30,36 +41,28 @@ func initializeMazeCells(h int16, w int16) [][]cell {
 			walls := &s[row][col].walls
 			// Add neighbour above
 			if row > 0 {
-				*walls = append(*walls, NewWall(up, &s[row-1][col]))
+				*walls = append(*walls, NewWall(up, s[row-1][col]))
 			}
 
 			// Add neighbour below
 			if row < (h - 1) {
-				*walls = append(*walls, NewWall(down, &s[row+1][col]))
+				*walls = append(*walls, NewWall(down, s[row+1][col]))
 			}
 
 
 			// Add neighbour to the left
 			if col > 0 {
-				*walls = append(*walls, NewWall(left, &s[row][col-1]))
+				*walls = append(*walls, NewWall(left, s[row][col-1]))
 			}
 
 			// Add neighbour to the right
 			if col < (w - 1) {
-				*walls = append(*walls, NewWall(right, &s[row][col+1]))
+				*walls = append(*walls, NewWall(right, s[row][col+1]))
 			}
 		}
 	}
 
 	return s
-}
-
-func NewMaze(h int16, w int16) maze {
-	return maze{
-		height: h,
-		width:  w,
-		cells:  initializeMazeCells(h, w),
-	}
 }
 
 // figure out how to make `make` create a maze
@@ -74,12 +77,13 @@ func Generate(height int16, width int16) *maze {
 	_x := int16(rand.Intn(int(width)))
 	_y := int16(rand.Intn(int(height)))
 
+	// TODO: Remove this, generate random
 	_x = 0
 	_y = 0
 
 	// add the initial cell to the stack and mark it as visited
-	cell := &m.cells[_y][_x]
-	cell.visit()
+	cell := m.cells[_y][_x]
+	cell.visited = true
 
 	stack = append(stack, cell)
 	for len(stack) > 0 {
@@ -99,15 +103,11 @@ func Generate(height int16, width int16) *maze {
 		neighbour.removeWall(cell)
 
 		// mark the cell as visited and push it to the stack
-		neighbour.visit()
+		neighbour.visited = true
 		stack = append(stack, neighbour)
 	}
 
-	return &m
-}
-
-func (m* maze) printRow(row int16) {
-
+	return m
 }
 
 func (m* maze) _printRowBoarder() {
@@ -121,6 +121,7 @@ func (m* maze) _printRowBoarder() {
 const wallSym = "|||"
 const cellSym = "   "
 
+// TODO: Clean up bro
 func (m* maze) PrintMaze() {
 	m._printRowBoarder()
 	defer m._printRowBoarder()
