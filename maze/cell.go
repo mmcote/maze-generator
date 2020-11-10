@@ -24,20 +24,20 @@ func NewWall(c *cell) *wall {
 }
 
 type cell struct {
-	visited bool
-	walls map[Side]*wall
+	visited    bool
+	neighbours map[Side]*wall
 }
 
 func NewCell() *cell {
 	return &cell{
-		visited: false,
-		walls:   make(map[Side]*wall, 0),
+		visited:    false,
+		neighbours: make(map[Side]*wall, 0),
 	}
 }
 
 func (c *cell) getRandomNeighbour() *cell {
 	unvisited := make([]*wall, 0)
-	for _, w := range c.walls {
+	for _, w := range c.neighbours {
 		if !w.cell.visited {
 			unvisited = append(unvisited, w)
 		}
@@ -51,7 +51,7 @@ func (c *cell) getRandomNeighbour() *cell {
 }
 
 func (c *cell) removeWall(n *cell) {
-	for _, wall := range c.walls {
+	for _, wall := range c.neighbours {
 		if n == wall.cell {
 			wall.present = false
 			return
@@ -60,7 +60,7 @@ func (c *cell) removeWall(n *cell) {
 }
 
 func (c* cell) hasWall(s Side) bool {
-	if w, ok := c.walls[s]; ok && w.present{
+	if w, ok := c.neighbours[s]; ok && w.present{
 		return true
 	}
 

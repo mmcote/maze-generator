@@ -7,10 +7,8 @@ import (
 )
 
 type maze struct {
-	height, width int
 	root *cell
 	genStart *cell
-	cells [][]*cell
 }
 
 func NewMaze(h int, w int) *maze {
@@ -21,32 +19,22 @@ func NewMaze(h int, w int) *maze {
 	_y := rand.Intn(h)
 
 	return &maze{
-		height: h,
-		width:  w,
-		cells:  cells,
 		root: cells[0][0],
 		genStart: cells[_y][_x],
 	}
 }
 
-// TODO: Candidate for removal
-// - Need to remove reliance on this function when drawing the maze
-// - Easiest way, keep track of root node (0, 0) in maze object
-func (m *maze) getCell(x int, y int) *cell {
-	return m.cells[x][y]
-}
-
 func _initializeWalls(above []*cell, below []*cell) {
 	w := len(above)
 	for i := 0; i < w - 1; i++ {
-		above[i].walls[right] = NewWall(above[i + 1])
-		above[i + 1].walls[left] = NewWall(above[i])
+		above[i].neighbours[right] = NewWall(above[i + 1])
+		above[i + 1].neighbours[left] = NewWall(above[i])
 	}
 
 	if below != nil {
 		for i := 0; i < w; i++ {
-			above[i].walls[down] = NewWall(below[i])
-			below[i].walls[up] = NewWall(above[i])
+			above[i].neighbours[down] = NewWall(below[i])
+			below[i].neighbours[up] = NewWall(above[i])
 		}
 	}
 }
@@ -105,8 +93,18 @@ func Generate(height int, width int) *maze {
 }
 
 func (m* maze) _printRowBoarder() {
-	for i := 0; i < m.width*2 + 1; i++ {
-		fmt.Printf("|%d|", i % 10)
+	col := 0
+	c := m.root
+	for c != nil {
+		fmt.Printf("|%d||%d|", 2*col % 10, (2*col + 1) % 10)
+
+		if _, ok := c.neighbours[right]; !ok {
+			fmt.Printf("|%d|", (2*col + 2) % 10)
+			break
+		}
+
+		c = c.neighbours[right].cell
+		col++
 	}
 	fmt.Println()
 }
@@ -114,50 +112,67 @@ func (m* maze) _printRowBoarder() {
 const wallSym = "|||"
 const cellSym = "   "
 
-// TODO: Clean up bro
+func _printRow(row int, c *cell) {
+	// create cell line and draw left border
+	var cellLineBuilder strings.Builder
+	cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row+1)%10))
+
+	// create wall line below draw wall line below
+	var wallLineBuilder strings.Builder
+	wallLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row+2)%10))
+
+	for {
+		cellLineBuilder.WriteString(cellSym)
+		if _, ok := c.neighbours[right]; ok {
+			if c.hasWall(right) {
+				cellLineBuilder.WriteString(wallSym)
+			} else {
+				cellLineBuilder.WriteString(cellSym)
+			}
+		}
+
+		if _, ok := c.neighbours[down]; ok {
+			if c.hasWall(down) {
+				wallLineBuilder.WriteString(wallSym)
+			} else {
+				wallLineBuilder.WriteString(cellSym)
+			}
+		}
+		if _, ok := c.neighbours[right]; ok {
+			wallLineBuilder.WriteString(wallSym)
+		}
+
+		if _, ok := c.neighbours[right]; !ok {
+			break
+		}
+
+		c = c.neighbours[right].cell
+	}
+
+	cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row+1)%10))
+	wallLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row+2)%10))
+
+	fmt.Println(cellLineBuilder.String())
+	if _, ok := c.neighbours[down]; ok {
+		fmt.Println(wallLineBuilder.String())
+	}
+}
+
 func (m* maze) PrintMaze() {
 	m._printRowBoarder()
 	defer m._printRowBoarder()
 
-	for row := 0; row < m.height; row++ {
-		var cellLineBuilder strings.Builder
-		cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 1) % 10))
+	row := 0
+	c := m.root
+	for {
+		_printRow(row, c)
 
-		var wallLineBuilder strings.Builder
-		wallLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 2) % 10))
-
-		// Print in top-left to bottom-right fashion
-		for col := 0; col < m.width; col++ {
-			cell := m.getCell(row, col)
-			cellLineBuilder.WriteString(cellSym)
-
-			if col != m.width - 1 {
-				if cell.hasWall(right) {
-					cellLineBuilder.WriteString(wallSym)
-				} else {
-					cellLineBuilder.WriteString(cellSym)
-				}
-			}
-
-			if row != m.height - 1 {
-				if cell.hasWall(down) {
-					wallLineBuilder.WriteString(wallSym)
-				} else {
-					wallLineBuilder.WriteString(cellSym)
-				}
-			}
-
-			if col != m.width - 1 {
-				wallLineBuilder.WriteString(wallSym)
-			}
+		if _, ok := c.neighbours[down]; !ok {
+			break
 		}
-		cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 1) % 10))
-		wallLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 2) % 10))
 
-		fmt.Println(cellLineBuilder.String())
-		if row != m.height - 1 {
-			fmt.Println(wallLineBuilder.String())
-		}
+		c = c.neighbours[down].cell
+		row++
 	}
 }
 
