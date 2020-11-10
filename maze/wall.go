@@ -1,6 +1,6 @@
 package maze
 
-type Side int16
+type Side int
 
 const (
 	up Side = iota

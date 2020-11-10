@@ -7,11 +7,11 @@ import (
 )
 
 type maze struct {
-	height, width int16
+	height, width int
 	cells [][]*cell
 }
 
-func NewMaze(h int16, w int16) *maze {
+func NewMaze(h int, w int) *maze {
 	return &maze{
 		height: h,
 		width:  w,
@@ -22,11 +22,11 @@ func NewMaze(h int16, w int16) *maze {
 // TODO: Candidate for removal
 // - Need to remove reliance on this function when drawing the maze
 // - Easiest way, keep track of root node (0, 0) in maze object
-func (m *maze) getCell(x int16, y int16) *cell {
+func (m *maze) getCell(x int, y int) *cell {
 	return m.cells[x][y]
 }
 
-func initializeMazeCells(h int16, w int16) [][]*cell {
+func initializeMazeCells(h int, w int) [][]*cell {
 	s := make([][]*cell, h)
 	for i := range s {
 		s[i] = make([]*cell, w)
@@ -35,9 +35,8 @@ func initializeMazeCells(h int16, w int16) [][]*cell {
 		}
 	}
 
-	var row, col int16
-	for row = 0; row < h; row++ {
-		for col = 0; col < w; col++ {
+	for row := 0; row < h; row++ {
+		for col := 0; col < w; col++ {
 			walls := &s[row][col].walls
 			// Add neighbour above
 			if row > 0 {
@@ -67,15 +66,15 @@ func initializeMazeCells(h int16, w int16) [][]*cell {
 
 // figure out how to make `make` create a maze
 
-func Generate(height int16, width int16) *maze {
+func Generate(height int, width int) *maze {
 	m := NewMaze(height, width)
 
 	// stack for nodes to explore
 	stack := make([]*cell, 0)
 
 	// generate the coordinates of the initial cell
-	_x := int16(rand.Intn(int(width)))
-	_y := int16(rand.Intn(int(height)))
+	_x := int(rand.Intn(int(width)))
+	_y := int(rand.Intn(int(height)))
 
 	// TODO: Remove this, generate random
 	_x = 0
@@ -111,8 +110,7 @@ func Generate(height int16, width int16) *maze {
 }
 
 func (m* maze) _printRowBoarder() {
-	var i int16
-	for i = 0; i < m.width*2 + 1; i++ {
+	for i := 0; i < m.width*2 + 1; i++ {
 		fmt.Printf("|%d|", i % 10)
 	}
 	fmt.Println()
@@ -126,8 +124,7 @@ func (m* maze) PrintMaze() {
 	m._printRowBoarder()
 	defer m._printRowBoarder()
 
-	var row, col int16
-	for row = 0; row < m.height; row++ {
+	for row := 0; row < m.height; row++ {
 		var cellLineBuilder strings.Builder
 		cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 1) % 10))
 
@@ -135,7 +132,7 @@ func (m* maze) PrintMaze() {
 		wallLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row + 2) % 10))
 
 		// Print in top-left to bottom-right fashion
-		for col = 0; col < m.width; col++ {
+		for col := 0; col < m.width; col++ {
 			cell := m.getCell(row, col)
 			cellLineBuilder.WriteString(cellSym)
 
