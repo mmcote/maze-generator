@@ -2,27 +2,6 @@ package maze
 
 import "math/rand"
 
-type Side int
-
-const (
-	up Side = iota
-	down
-	right
-	left
-)
-
-type neighbour struct {
-	wall bool
-	cell *cell
-}
-
-func NewNeighbour(c *cell) *neighbour {
-	return &neighbour{
-		wall: true,
-		cell: c,
-	}
-}
-
 type cell struct {
 	visited    bool
 	neighbours map[Side]*neighbour
@@ -59,7 +38,7 @@ func (c *cell) removeWall(n *cell) {
 	}
 }
 
-func (c* cell) hasWall(s Side) bool {
+func (c *cell) hasWall(s Side) bool {
 	if n, ok := c.neighbours[s]; ok && n.wall {
 		return true
 	}

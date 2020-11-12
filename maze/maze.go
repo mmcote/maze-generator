@@ -14,11 +14,11 @@ func NewMaze(h int, w int) *maze {
 	return &maze{initializeMaze(h, w)}
 }
 
-func _initializeNeighbours(above []*cell, below []*cell) {
+func initializeNeighbours(above []*cell, below []*cell) {
 	w := len(above)
-	for i := 0; i < w - 1; i++ {
-		above[i].neighbours[right] = NewNeighbour(above[i + 1])
-		above[i + 1].neighbours[left] = NewNeighbour(above[i])
+	for i := 0; i < w-1; i++ {
+		above[i].neighbours[right] = NewNeighbour(above[i+1])
+		above[i+1].neighbours[left] = NewNeighbour(above[i])
 	}
 
 	if below != nil {
@@ -28,6 +28,7 @@ func _initializeNeighbours(above []*cell, below []*cell) {
 		}
 	}
 }
+
 func initializeMaze(h int, w int) *cell {
 	s := make([][]*cell, h)
 	for i := range s {
@@ -37,10 +38,10 @@ func initializeMaze(h int, w int) *cell {
 		}
 	}
 
-	for i := 0; i < h - 1; i++ {
-		_initializeNeighbours(s[i], s[i + 1])
+	for i := 0; i < h-1; i++ {
+		initializeNeighbours(s[i], s[i+1])
 	}
-	_initializeNeighbours(s[len(s) - 1], nil)
+	initializeNeighbours(s[len(s)-1], nil)
 
 	return s[0][0]
 }
@@ -62,8 +63,6 @@ func (m *maze) getRandomStartingCell(h int, w int) *cell {
 	return c
 }
 
-// figure out how to make `make` create a maze
-
 func Generate(height int, width int) *maze {
 	m := NewMaze(height, width)
 
@@ -77,7 +76,7 @@ func Generate(height int, width int) *maze {
 	stack = append(stack, cell)
 	for len(stack) > 0 {
 		l := len(stack)
-		cell, stack = stack[l - 1], stack[:l - 1]
+		cell, stack = stack[l-1], stack[:l-1]
 
 		// choose a random neighbour to explore
 		neighbour := cell.getRandomNeighbour()
@@ -99,14 +98,17 @@ func Generate(height int, width int) *maze {
 	return m
 }
 
-func (m* maze) _printRowBoarder() {
+const wallSym = "|||"
+const cellSym = "   "
+
+func (m *maze) printHorizontalBorder() {
 	col := 0
 	c := m.root
 	for c != nil {
-		fmt.Printf("|%d||%d|", 2*col % 10, (2*col + 1) % 10)
+		fmt.Printf("|%d||%d|", 2*col%10, (2*col+1)%10)
 
 		if _, ok := c.neighbours[right]; !ok {
-			fmt.Printf("|%d|", (2*col + 2) % 10)
+			fmt.Printf("|%d|", (2*col+2)%10)
 			break
 		}
 
@@ -116,10 +118,7 @@ func (m* maze) _printRowBoarder() {
 	fmt.Println()
 }
 
-const wallSym = "|||"
-const cellSym = "   "
-
-func _printRow(row int, c *cell) {
+func printRow(row int, c *cell) {
 	// create cell line and draw left border
 	var cellLineBuilder strings.Builder
 	cellLineBuilder.WriteString(fmt.Sprintf("|%d|", (2*row+1)%10))
@@ -165,14 +164,14 @@ func _printRow(row int, c *cell) {
 	}
 }
 
-func (m* maze) PrintMaze() {
-	m._printRowBoarder()
-	defer m._printRowBoarder()
+func (m *maze) Print() {
+	m.printHorizontalBorder()
+	defer m.printHorizontalBorder()
 
 	row := 0
 	c := m.root
 	for {
-		_printRow(row, c)
+		printRow(row, c)
 
 		if _, ok := c.neighbours[down]; !ok {
 			break
@@ -182,4 +181,3 @@ func (m* maze) PrintMaze() {
 		row++
 	}
 }
-
